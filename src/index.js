@@ -4,7 +4,23 @@ function eval() {
 }
 
 function expressionCalculator(expr) {
-    // write your solution here
+    const calculateString = function(str){
+        const addFunction = function(str){
+
+        }
+        const subtractFunction = function(str){
+
+        }
+        const multiplyFunction = function(str){
+
+        }
+        const divisionFunction = function(str){
+
+        }
+    }
+    const findDeepestBracket = function(str){
+        
+    }
 }
 
 module.exports = {
