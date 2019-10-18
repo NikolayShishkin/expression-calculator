@@ -6,36 +6,42 @@ function eval() {
 function expressionCalculator(expr) {
   // function to calculate string which does not contains brackets
   const calculateString = function(str) {
-    let leftPart, rightPart;
-    while (str.match(/(\d)+\*(\d)+/)) {
-      // while we can find '*', continue extracting
-      leftPart = +str.match(/(\d)+\*(\d)+/)[0].match(/(\d)+/)[0]; //multyplying expression
-      rightPart = +str.match(/(\d)+\*(\d)+/)[0].match(/(\d)+/g)[1]; // calculating it and replacing it in original string
-      str = str.replace(/(\d)+\*(\d)+/, (leftPart * rightPart).toString());
-    }
-    while (str.match(/(\d)+\/(\d)+/)) {
-      leftPart = +str.match(/(\d)+\/(\d)+/)[0].match(/(\d)+/)[0]; //same for dividing and other operations
-      rightPart = +str.match(/(\d)+\/(\d)+/)[0].match(/(\d)+/g)[1];
-      if (rightPart === 0) {
-        throw 'TypeError: Division by zero.';
+    let leftPart, rightPart, matchedExpression, resultString;
+
+    while (str.match(/([\d\.])+[\/\*]+([\d\.])+/)) {
+      matchedExpression = str.match(/([\d\.])+[\/\*]+([\d\.])+/)[0];
+      leftPart = +matchedExpression.match(/([\d\.])+/)[0];
+      rightPart = +matchedExpression.match(/([\d\.])+/g)[1];
+      if (matchedExpression.includes('*')) {
+        resultString = (leftPart * rightPart).toFixed(4).toString();
+        str = str.replace(/([\d\.])+[\/\*]+([\d\.])+/, resultString);
+      } else {
+        if (rightPart === 0) {
+          throw 'TypeError: Division by zero.';
+        }
+        resultString = (leftPart / rightPart).toFixed(4).toString();
+        str = str.replace(
+          /([\d\.])+[\/\*]+([\d\.])+/,
+          (leftPart / rightPart).toString()
+        );
       }
-      str = str.replace(/(\d)+\/(\d)+/, (leftPart / rightPart).toString());
     }
-    while (str.match(/(\d)+\+(\d)+/)) {
-      leftPart = +str.match(/(\d)+\+(\d)+/)[0].match(/(\d)+/)[0];
-      rightPart = +str.match(/(\d)+\+(\d)+/)[0].match(/(\d)+/g)[1];
-      str = str = str.replace(
-        /(\d)+\+(\d)+/,
-        (leftPart + rightPart).toString()
-      );
-    }
-    if (str.match(/(\d)+\-(\d)+/)) {
-      leftPart = +str.match(/(\d)+\-(\d)+/)[0].match(/(\d)+/)[0];
-      rightPart = +str.match(/(\d)+\-(\d)+/)[0].match(/(\d)+/g)[1];
-      str = str.replace(/(\d)+\-(\d)+/, (leftPart - rightPart).toString());
+
+    while (str.match(/([\d\.])+[\+-]+([\d\.])+/)) {
+      matchedExpression = str.match(/([\d\.])+[\+-]+([\d\.])+/)[0];
+      leftPart = +matchedExpression.match(/([\d\.])+/)[0];
+      rightPart = +matchedExpression.match(/([\d\.])+/g)[1];
+      if (matchedExpression.includes('+')) {
+        resultString = (leftPart + rightPart).toString();
+        str = str.replace(/([\d\.])+[\+-]+([\d\.])+/, resultString);
+      } else {
+        resultString = (leftPart - rightPart).toString();
+        str = str.replace(/([\d\.])+[\+-]+([\d\.])+/, resultString);
+      }
     }
     return str;
   };
+
   //function to find deepest bracket pair
   const findUninterruptedBracketPair = function(str) {
     let leftBracketPosition = -1;
@@ -81,13 +87,15 @@ function expressionCalculator(expr) {
   if (!validateBrackets(expr)) {
     throw 'ExpressionError: Brackets must be paired';
   }
-  while (findUninterruptedBracketPair(expr)) {
+  let counter = 0;
+  while (findUninterruptedBracketPair(expr) && counter < 50) {
+    counter += 1;
     let bracketStart = findUninterruptedBracketPair(expr)[0];
     let bracketEnd = findUninterruptedBracketPair(expr)[1];
     let solvedString = calculateString(
-      expr.slice(bracketStart + 1, bracketEnd - 1)
+      expr.slice(bracketStart + 1, bracketEnd)
     );
-    expr = expr.slice(0, bracketStart) + solvedString + expr.slice(bracketEnd);
+    expr = expr.slice(0, bracketStart) + solvedString + expr.slice(bracketEnd + 1);
   }
   expr = calculateString(expr);
   return +expr;
